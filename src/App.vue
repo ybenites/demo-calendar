@@ -28,4 +28,44 @@
     }
   }
 }
+
+.bg-color-1{
+    background-color: rgb(213, 0, 0) !important;   
+}
+
+.bg-color-2 {
+    background-color: rgb(230, 124, 115) !important;   
+}
+
+.bg-color-3 {
+    background-color: rgb(244, 81, 30) !important;   
+}
+
+.bg-color-4 {
+    background-color: rgb(246, 191, 38) !important;   
+}
+
+.bg-color-5 {
+    background-color: rgb(51, 182, 121) !important;   
+}
+
+.bg-color-6 {
+    background-color: rgb(11, 128, 67) !important;   
+}
+
+.bg-color-7 {
+    background-color: rgb(3, 155, 229) !important;   
+}
+
+.bg-color-8 {
+    background-color: rgb(63, 81, 181) !important;   
+}
+
+.bg-color-9 {
+    background-color: rgb(121, 134, 203) !important;   
+}
+
+.bg-color-10 {
+    background-color: rgb(142, 36, 170) !important;   
+}
 </style>

@@ -1,9 +1,6 @@
 <template>
     <div class="d-flex flex-column vh-100">
-      <NavigationCalendar 
-        :a_months="a_months" 
-        :monthSync.sync="month" 
-        :yearSync.sync="year" />
+      <NavigationCalendar :a_months="a_months" />
 
       <div class="pb-4 h-100">
         <table class="table table-bordered h-100">
@@ -18,7 +15,7 @@
             <tr v-for="(week, index) in getWeeks" :key="index">
               <td :class="objDay" v-for="(objDay,index) in week" :key="objDay.day+index">
                   <div class="text-start fw-bold text-date">
-                      <span class="day-month" :class="{ isCurrent:numberDay === objDay.day && staticYear === year && objDay.isCurrentMonthDate }">
+                      <span class="day-month" :class="{ isCurrent: getIsdateToday(objDay) }">
                           {{objDay.day}}
                       </span>
                   </div>   
@@ -35,6 +32,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import NavigationCalendar from "./partial/NavigationCalendar.vue";
 import Reminder from "./partial/Reminder.vue";
+import { State } from "vuex-class";
 
 @Component({
     components:{
@@ -43,6 +41,8 @@ import Reminder from "./partial/Reminder.vue";
     }
 })
 export default class Calendar extends Vue {
+    @State('EventModule') eventModule!: any;
+
     a_days = [
         {name: 'Sunday', shortName: 'Sun.'},
         {name: 'Monday', shortName: 'Mon.'},
@@ -71,10 +71,17 @@ export default class Calendar extends Vue {
     monthSelected = null;
 
     currentDate: Date = new Date();
-    month: number = this.currentDate.getMonth() + 1;
-    year: number = this.currentDate.getFullYear();
+    staticMonth: number = this.currentDate.getMonth() + 1;
     staticYear: number = this.currentDate.getFullYear();
-    numberDay = this.currentDate.getDate()   
+    numberDay = this.currentDate.getDate();    
+
+    get year() {
+        return this.eventModule.currentDateSelected.year;
+    }
+
+    get month() {
+        return this.eventModule.currentDateSelected.month;
+    }
 
     get getDaysInMonth(): number {
         return new Date(this.year, this.month, 0).getDate();
@@ -145,7 +152,12 @@ export default class Calendar extends Vue {
             weeks.push(week);
         }
         return weeks;
-    }    
+    }
+    
+    getIsdateToday(objDay: any): boolean {
+        return this.numberDay === objDay.day && this.staticYear === this.year 
+            && this.month === this.staticMonth && objDay.isCurrentMonthDate;
+    }
 }
 </script>
 <style lang="scss" scoped>

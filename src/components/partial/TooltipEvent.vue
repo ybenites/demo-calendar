@@ -2,103 +2,219 @@
     <div class="tooltip-custom" role="tooltip" v-show="openToolTip">
         <div class="pb-3">
             <div class="text-end">
-                <button class="btnClose">X</button>
+                <button class="btnClose" @click="closeTooltip">X</button>
             </div>
             <div>
                 <div class="mb-3">
                     <label class="form-label">Title</label>
-                    <input type="text" class="form-control" placeholder="Title" maxlength="30">
+                    <input v-model="eventData.title" 
+                        type="text" 
+                        :class="`form-control ${emptyTitle?'is-invalid':''}`" 
+                        placeholder="Title"
+                        @input="clearErrors" 
+                        maxlength="30" />
+                    <small class="invalid-feedback">Add title</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Time</label>
-                    <v-select :clearable="false" label="name" :options="a_hours">                        
+                    <v-select :clearable="false"
+                        :class="`${emptyTime?'is-invalid':''}`" 
+                        label="name" 
+                        :options="$aHours" 
+                        :reduce="(oHour) => oHour.hour"
+                        @input="clearErrors"
+                        v-model="timeSelected">                        
                     </v-select>
+                    <small class="invalid-feedback">Add time</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">City</label>
-                    <input type="text" class="form-control" placeholder="City">
+                    <input v-model="eventData.city" 
+                        type="text" 
+                        :class="`form-control ${emptyCity?'is-invalid':''}`" 
+                        @input="clearErrors"
+                        placeholder="City" />
+                    <small class="invalid-feedback">Add city</small>
                 </div>
                 <div class="mb-3 d-flex">
                     <div class="pl-1">
-                        <div class="circle-color color-1 mb-1" :class="{ isColorSelected: isColorSelected === 1 }">
+                        <div class="circle-color bg-color-1 mb-1" 
+                            role="button"
+                            :class="{ isColorSelected: colorSelected === 1 }" 
+                            @click="fnSelectColor(1)">
                         </div>
-                         <div class="circle-color color-2" :class="{ isColorSelected: isColorSelected === 2 }">
+                         <div class="circle-color bg-color-2" 
+                            :class="{ isColorSelected: colorSelected === 2 } " 
+                            @click="fnSelectColor(2)">
                          </div>
                     </div>
                     <div class="px-1">
-                        <div class="circle-color color-3 mb-1" :class="{ isColorSelected: isColorSelected === 3 }">
+                        <div class="circle-color bg-color-3 mb-1" 
+                            :class="{ isColorSelected: colorSelected === 3 }" 
+                            @click="fnSelectColor(3)">
                         </div>
-                         <div class="circle-color color-4" :class="{ isColorSelected: isColorSelected === 4 }">                             
+                         <div class="circle-color bg-color-4" 
+                            :class="{ isColorSelected: colorSelected === 4 }" 
+                            @click="fnSelectColor(4)">                             
                          </div>
                     </div>
                     <div class="px-1">
-                        <div class="circle-color color-5 mb-1" :class="{ isColorSelected: isColorSelected === 5 }">
+                        <div class="circle-color bg-color-5 mb-1" 
+                            :class="{ isColorSelected: colorSelected === 5 }" 
+                            @click="fnSelectColor(5)">
                         </div>
-                         <div class="circle-color color-6" :class="{ isColorSelected: isColorSelected === 6 }">                             
+                         <div class="circle-color bg-color-6" 
+                            :class="{ isColorSelected: colorSelected === 6 }" 
+                            @click="fnSelectColor(6)">                             
                          </div>
                     </div>
                     <div class="px-1">
-                        <div class="circle-color color-7 mb-1" :class="{ isColorSelected: isColorSelected === 7 }">
+                        <div class="circle-color bg-color-7 mb-1" 
+                            :class="{ isColorSelected: colorSelected === 7 }" 
+                            @click="fnSelectColor(7)">
                         </div>
-                         <div class="circle-color color-8" :class="{ isColorSelected: isColorSelected === 8 }">                             
+                         <div class="circle-color bg-color-8" 
+                            :class="{ isColorSelected: colorSelected === 8 }" 
+                            @click="fnSelectColor(8)">                             
                          </div>
                     </div>
                     <div class="px-1">
-                        <div class="circle-color color-9 mb-1" :class="{ isColorSelected: isColorSelected === 9 }">
+                        <div class="circle-color bg-color-9 mb-1" 
+                            :class="{ isColorSelected: colorSelected === 9 }" 
+                            @click="fnSelectColor(9)">
                         </div>
-                         <div class="circle-color color-10" :class="{ isColorSelected: isColorSelected === 10 }">                             
+                         <div class="circle-color bg-color-10" 
+                            :class="{ isColorSelected: colorSelected === 10 }" 
+                            @click="fnSelectColor(10)">                             
                          </div>
                     </div>
                 </div>
             </div>
             <div class="text-end">
-                <button class="btn btn-primary">Save</button>
+                <button class="btn btn-primary" @click="saveEvent">Save</button>
             </div>
         </div>
         <div class="arrow-custom" data-popper-arrow></div>
     </div>
 </template>
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit, Watch } from "vue-property-decorator";
+import { State, Action, Getter } from "vuex-class";
 import Event from "@/models/Event";
 
 @Component
 export default class TooltipEvent extends Vue {
     @Prop() readonly openToolTip!: boolean;
+    @Prop() id!: number;
+    @State('EventModule') eventModule!: any;
+    @Action('EventModule/addEvent') addEvent!: any;
+    @Action('EventModule/editEvent') editEvent!: any;
+    @Getter('EventModule/getTotalEvents') getTotalEvents!: number;
+    @Getter('EventModule/getEventById') getEventById !: (id: number) => Event;
+    @Watch('id') idChanged(val: number, oldVal: number) {
+        if(val != 0) {
+            this.eventData = Object.assign({}, this.getEventById(this.id));
+            this.timeSelected = this.eventData.hour;
+            this.colorSelected = this.eventData.color;
+        } else {
+            this.timeSelected = null;
+            this.eventData.title = '';
+            this.eventData.hour = null;
+            this.eventData.city = '';
+            this.colorSelected = 7;
+            this.clearErrors();
+        }
+    }
+    @Watch('openToolTip') openToolTipChanged(val: boolean, oldVal: boolean) {
+        if(!val){
+            this.timeSelected = null;
+            this.eventData.title = '';
+            this.eventData.hour = null;
+            this.eventData.city = '';
+            this.colorSelected = 7;
+            this.clearErrors();
+        }
+    }
 
-    isColorSelected = 7;
-    // timeSelected : number;
+    colorSelected = 7;
+    timeSelected : number | null = null;
+    emptyTitle : boolean | null = null;
+    emptyTime : boolean | null = null;
+    emptyCity : boolean | null = null;
 
-    a_hours = [
-        {hour:'24' , name:'12:00 am'},
-        {hour:'1' , name:'1:00 am'},
-        {hour:'2' , name:'2:00 am'},
-        {hour:'3' , name:'3:00 am'},
-        {hour:'4' , name:'4:00 am'},
-        {hour:'5' , name:'5:00 am'},
-        {hour:'6' , name:'6:00 am'},
-        {hour:'7' , name:'7:00 am'},
-        {hour:'8' , name:'8:00 am'},
-        {hour:'9' , name:'9:00 am'},
-        {hour:'10' , name:'10:00 am'},
-        {hour:'11' , name:'11:00 am'},
-        {hour:'12' , name:'12:00 pm'},
-        {hour:'13' , name:'13:00 pm'},
-        {hour:'14' , name:'14:00 pm'},
-        {hour:'15' , name:'15:00 pm'},
-        {hour:'16' , name:'16:00 pm'},
-        {hour:'17' , name:'17:00 pm'},
-        {hour:'18' , name:'18:00 pm'},
-        {hour:'19' , name:'19:00 pm'},
-        {hour:'20' , name:'20:00 pm'},
-        {hour:'21' , name:'21:00 pm'},
-        {hour:'22' , name:'22:00 pm'},
-        {hour:'23' , name:'23:00 pm'},
-    ]
+    eventData !: Event;
+
+    get year() {
+        return this.eventModule.currentDateSelected.year;
+    }
+
+    get month() {
+        return this.eventModule.currentDateSelected.month;
+    }
+
+    get day() {
+        return this.eventModule.currentDateSelected.day;
+    }
+
+    created() {
+        this.eventData = new Event(0 ,'', this.year, this.month, this.day, this.timeSelected, '', this.colorSelected);
+    }
+
+    @Emit('close-tooltip')
+    closeTooltip() {
+      this.clearErrors();
+    }
+
+    clearErrors() {
+        this.emptyTitle = false;
+        this.emptyTime = false;
+        this.emptyCity = false;
+    }
+
+    saveEvent() {
+        if(this.validateEmptyValues()) {
+            this.eventData.year = this.year;
+            this.eventData.month = this.month;
+            this.eventData.day = this.day;
+            this.eventData.hour = this.timeSelected;
+            this.eventData.color = this.colorSelected;
+            if(this.id == 0) {
+                this.eventData.id = this.getTotalEvents + 1;
+                this.addEvent(this.eventData);
+            } else {
+                this.editEvent(this.eventData);
+            }
+            
+            this.closeTooltip();
+        }
+        return;
+    }
+
+    validateEmptyValues() : boolean {
+        let isValid = true;
+        if(this.eventData.title === '') {
+            this.emptyTitle = true;
+            isValid = false;
+        }
+        if(this.timeSelected === null) {
+            this.emptyTime = true;
+            isValid = false;
+        }
+        if(this.eventData.city === '') {
+            this.emptyCity = true;
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    fnSelectColor(color: number) {
+        this.colorSelected = color;
+    }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .circle-color{
     width: 18px;
     height: 18px;
@@ -108,45 +224,6 @@ export default class TooltipEvent extends Vue {
 .isColorSelected {
     border: 1px solid #333;
     box-shadow: 0px 0px 0px 3px rgba(0,0,0,0.5);
-}
-.color-1{
-    background-color: rgb(213, 0, 0);   
-}
-
-.color-2 {
-    background-color: rgb(230, 124, 115);
-}
-
-.color-3 {
-    background-color: rgb(244, 81, 30);
-}
-
-.color-4 {
-    background-color: rgb(246, 191, 38);
-}
-
-.color-5 {
-    background-color: rgb(51, 182, 121);
-}
-
-.color-6 {
-    background-color: rgb(11, 128, 67);
-}
-
-.color-7 {
-    background-color: rgb(3, 155, 229);
-}
-
-.color-8 {
-    background-color: rgb(63, 81, 181);
-}
-
-.color-9 {
-    background-color: rgb(121, 134, 203);
-}
-
-.color-10 {
-    background-color: rgb(142, 36, 170);
 }
 
 .btn-primary {
@@ -205,7 +282,7 @@ export default class TooltipEvent extends Vue {
 }
 
 .tooltip-custom[data-popper-placement^='left'] > .arrow-custom {
-  right: -0px;
+  right: -4px;
 }
 
 .tooltip-custom[data-popper-placement^='right'] > .arrow-custom {

@@ -20,45 +20,66 @@
             label="name" 
             :options="a_months" 
             :reduce="(aMonth) => aMonth.order" 
-            v-model="month"  ></v-select>
+            :value="month"
+            @input="setMonth"  ></v-select>
         </div>
         <div class="pl-3 w-25">        
-          <v-select :clearable="false" :options="a_years" v-model="year">
+          <v-select :clearable="false" :options="a_years" :value="year" @input="setYear">
           </v-select>
         </div>
       </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
+import { State, Action } from "vuex-class";
 
 
 @Component
 export default class NavigationCalendar extends Vue {
     @Prop() readonly a_months!: any[];
-    @PropSync('monthSync', { type: Number }) month!: number;
-    @PropSync('yearSync', { type: Number }) year!: number;
+    @State('EventModule') eventModule!: any;
+    @Action('EventModule/setMonth') setMonth!: any;
+    @Action('EventModule/setYear') setYear!: any;
 
-    a_years!: number[];
-
-    created(){
-        this.a_years = Array.apply(null, Array(this.year + 1000)).map((d,i)=>i+100);
+    get year() {
+      return this.eventModule.currentDateSelected.year;
     }
 
-    previousMonth(): void {
-        this.month--;
-        if( this.month === 0 ) {
-            this.year--;
-            this.month = 12;
-        }
+    get month() {
+      return this.eventModule.currentDateSelected.month;
+    }
+
+    get a_years(): number[]{
+      return Array.apply(null, Array(this.year + 1000)).map((d,i)=>i+100);
+    }
+
+    previousMonth(): void {            
+      let month = this.month;
+      let year = this.year;
+
+      month--;
+      if(month === 0) {        
+        year--;
+        month = 12;
+        this.setYear(year);
+      }
+      
+      this.setMonth(month);
     }
 
     nextMonth() {
-        this.month++;
-        if( this.month === 13 ) {
-            this.year++;
-            this.month = 1;
-        }
+      let year = this.year;
+      let month = this.month;
+
+      month++;
+      if( month === 13 ) {
+          year++;
+          month = 1;
+          this.setYear(year);
+      }
+
+      this.setMonth(month);
     }
 }
 </script>
